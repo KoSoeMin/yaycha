@@ -1,44 +1,87 @@
 import { useState, createContext, useContext, useMemo } from "react";
-import { CssBaseline, ThemeProvider, createTheme, Snackbar, Alert } from "@mui/material";
-import App from "./App";
-import AppDrawer from "./components/AppDrawer";
+import { 
+  CssBaseline, 
+  ThemeProvider, 
+  createTheme, 
+} from "@mui/material";
+import { 
+  createBrowserRouter, 
+  RouterProvider, 
+} from "react-router-dom";
 import { deepPurple, grey } from "@mui/material/colors";
+import Template from "./Template";
+import Home from "./pages/Home";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Profile from "./pages/Profile";
+import Comments from "./pages/Comments";
+import Likes from "./pages/Likes";
 
-export const AppContext = createContext();
-export function useApp() { return useContext(AppContext); }
+const AppContext = createContext();
 
+export function useApp() {
+  return useContext(AppContext);
+}
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <Template />,
+    children: [
+      {
+        path: "/",
+        element: <Home />,
+      },
+      {
+        path: "/login",
+        element: <Login />,
+      },
+      {
+        path: "/register",
+        element: <Register />,
+      },
+      {
+        path: "/profile/:id",
+        element: <Profile />,
+      },
+      {
+        path: "/comments/:id",
+        element: <Comments />,
+      },
+      {
+        path: "/likes/:id",
+        element: <Likes />,
+      }
+    ],
+  },
+]);
 export default function ThemedApp() {
-  const [showForm, setShowForm] = useState(false);
   const [showDrawer, setShowDrawer] = useState(false);
+  const [showForm, setShowForm] = useState(false);
   const [globalMsg, setGlobalMsg] = useState(null);
   const [auth, setAuth] = useState(null);
   const [mode, setMode] = useState("light");
-
-  const theme = useMemo(() => createTheme({
-    palette: {
-      mode,
-      primary: deepPurple,
-      banner: mode === "dark" ? grey[800] : grey[200],
-    },
-  }), [mode]);
-
+  const theme = useMemo(() => {
+    return createTheme({
+      palette: {
+        mode,
+        primary: deepPurple,
+        banner: mode === "dark" ? grey[800] : grey[200],
+        text: { fade: grey[500] },
+      },
+    });
+  }, [mode]);
   return (
     <ThemeProvider theme={theme}>
-      <AppContext.Provider value={{ 
-        showDrawer, setShowDrawer, showForm, setShowForm, 
-        globalMsg, setGlobalMsg, auth, setAuth, mode, setMode 
-      }}>
+      <AppContext.Provider
+        value={{
+          showDrawer, setShowDrawer,
+          showForm, setShowForm,
+          globalMsg, setGlobalMsg,
+          auth, setAuth,
+          mode, setMode,
+        }}>
+        <RouterProvider router={router} />
         <CssBaseline />
-        <App />
-        <AppDrawer />
-        <Snackbar 
-          open={Boolean(globalMsg)} 
-          autoHideDuration={3000} 
-          onClose={() => setGlobalMsg(null)}
-          anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-        >
-          <Alert severity="success" variant="filled">{globalMsg}</Alert>
-        </Snackbar>
       </AppContext.Provider>
     </ThemeProvider>
   );
